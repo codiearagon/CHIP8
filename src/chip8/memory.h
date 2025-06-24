@@ -11,4 +11,5 @@ class Memory {
 
     private:
         std::array<uint8_t, 4096> memory;
+        void initFont();
  };
