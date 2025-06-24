@@ -1,6 +1,7 @@
 #include <vector>
 #include <stack>
 #include "memory.h"
+#include "display.h"
 
 class Chip8 {
     public:
@@ -14,9 +15,12 @@ class Chip8 {
         
     private:
         Memory *memory;
+        Display *display;
         std::stack<uint16_t> stack;
         uint8_t registers[16];
 
         uint16_t pc;
         uint16_t ir;
+
+        void tick();
 };

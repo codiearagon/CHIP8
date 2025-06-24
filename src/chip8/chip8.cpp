@@ -4,12 +4,12 @@
 
 Chip8::Chip8() {
     memory = new Memory();
-
     pc = 0x0;
 }
 
 Chip8::~Chip8() {
     delete memory;
+    delete display;
 }
 
 void Chip8::loadRom(std::string fileName) {
@@ -44,6 +44,7 @@ uint16_t Chip8::fetch() {
 
 void Chip8::decode() {
     uint16_t instruction = fetch();
+    std::cout << std::hex << "PC: " << pc << " inst: " << instruction << std::endl;
     uint16_t opcode = (instruction & 0xF000) >> 12;
     uint16_t secondNib = (instruction & 0x0F00) >> 8;
     uint16_t thirdNib = (instruction & 0x00F0) >> 4;
@@ -51,6 +52,8 @@ void Chip8::decode() {
 
     switch(opcode) {
         case 0x0:
+            if((instruction & 0x0FFF) == 0x00E0)
+                display->clearDisplay();
             break;
         case 0x1:
             pc = (instruction & 0x0FFF);
@@ -65,13 +68,33 @@ void Chip8::decode() {
             ir = (instruction & 0x0FFF);
             break;
         case 0xD:
-
             break;
     }
 }
 
 void Chip8::run() {
-    for(int i = 0x200; i < 0x300; i++) {
-        std::cout << std::hex << i << ": " << (int)memory->read(i) << std::endl;
+    display = new Display();
+
+    bool running = true;
+    SDL_Event event;
+
+    while(running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+            }
+        }
+
+        tick();
+        display->clearDisplay();
+        display->tick();
+
+        SDL_Delay(20);
     }
+
+    display->destroy();
+}
+
+void Chip8::tick() {
+    decode();
 }

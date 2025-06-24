@@ -44,7 +44,7 @@ void Memory::initFont() {
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
-    for(uint16_t i = 0x050; i <= 0x09F; i++) {
-        write(i, fontArray[i - 0x050]);
+    for(uint16_t i = 0; i <= 80; i++) {
+        write(0x50 + i, fontArray[i]);
     }
 }
