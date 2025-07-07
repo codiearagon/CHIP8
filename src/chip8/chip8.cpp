@@ -4,7 +4,7 @@
 
 Chip8::Chip8() {
     memory = new Memory();
-    pc = 0x0;
+    pc = 0x200;
 }
 
 Chip8::~Chip8() {
@@ -44,7 +44,7 @@ uint16_t Chip8::fetch() {
 
 void Chip8::decode() {
     uint16_t instruction = fetch();
-    // std::cout << std::hex << "PC: " << pc << " inst: " << instruction << std::endl;
+    std::cout << std::hex << "PC: " << (pc - 2) << " inst: " << instruction << std::endl;
     uint16_t opcode = (instruction & 0xF000) >> 12;
     uint16_t secondNib = (instruction & 0x0F00) >> 8;
     uint16_t thirdNib = (instruction & 0x00F0) >> 4;
@@ -68,11 +68,7 @@ void Chip8::decode() {
             ir = (instruction & 0x0FFF);
             break;
         case 0xD:
-            uint8_t xPos = registers[secondNib] % 64;
-            uint8_t yPos = registers[thirdNib] % 32;
-            registers[0xF] = 0;
-
-            display->draw(xPos, yPos, fourthNib, ir); // display tick
+            display->draw(registers, secondNib, thirdNib, fourthNib, ir); // display tick
             break;
     }
 }
@@ -92,7 +88,7 @@ void Chip8::run() {
 
         tick(); // cpu tick
 
-        SDL_Delay(20);
+        SDL_Delay(5);
     }
 
     display->destroy();

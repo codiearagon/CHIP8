@@ -1,6 +1,5 @@
 #include <vector>
 #include <stack>
-#include "memory.h"
 #include "display.h"
 
 class Chip8 {
@@ -17,7 +16,7 @@ class Chip8 {
         Memory *memory;
         Display *display;
         std::stack<uint16_t> stack;
-        uint8_t registers[16];
+        uint8_t registers[16] {0};
 
         uint16_t pc;
         uint16_t ir;

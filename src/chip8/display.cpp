@@ -4,7 +4,7 @@
 Display::Display(Memory* _mem) {
     mem = _mem;
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
         return;
     }
@@ -31,7 +31,7 @@ Display::Display(Memory* _mem) {
         return;
     }
 
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 }
 
 Display::~Display() {}
@@ -41,31 +41,48 @@ void Display::clearDisplay() {
     SDL_RenderClear(renderer);
 }
 
-void Display::draw(uint8_t x, uint8_t y, uint8_t n, uint16_t _ir) {
+void Display::draw(uint8_t *rg, uint8_t _x, uint8_t _y, uint8_t n, uint16_t& _ir) {
+    std::cout << "Drawing..." << std::endl;
+    int x = rg[_x] % TEXTURE_WIDTH;
+    int y = rg[_y] % TEXTURE_HEIGHT;
+    rg[0xF] = 0;
+
     void *pixels;
-    int pitch = 1;
+    int pitch;
 
     SDL_LockTexture(texture, nullptr, &pixels, &pitch);
 
-    for (int row = 0; row < n; ++row) {
-        uint8_t data = mem->read(_ir + row);
+    uint32_t *px = (uint32_t*)pixels;
 
-        for(int col = 0; col < 8; ++col) {
-            
-            if(x >= SCREEN_WIDTH)
-                break;
+    for (int row = 0; row < n; row++) {
+        int data = mem->read(_ir + row);
+        std::cout << data << std::endl;
+        
+        for(int col = 0; col < 8; col++) {
+            if((data & (0x80 >> col)) != 0) { // if pixel in sprite row is on
+                int pxLoc = y * (pitch / 4) + x;
 
+                if(px[pxLoc] == 0xFFFFFFFF)
+                    rg[0xF] = 1;
+
+                togglePixel(&px[pxLoc]);
+            }
+        
             x++;
+            
+            if(x >= TEXTURE_WIDTH)
+                break;
+                
         }
 
+        x = rg[_x] % TEXTURE_WIDTH;
         y++;
 
-        if(y >= SCREEN_HEIGHT)
+        if(y >= TEXTURE_HEIGHT)
             break;
     }
     
     SDL_UnlockTexture(texture);
-    clearDisplay();
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
     SDL_RenderPresent(renderer);
 }
@@ -74,4 +91,13 @@ void Display::destroy() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void Display::togglePixel(uint32_t *px) {
+    if(*px == 0xFFFFFFFF) {
+        *px = 0x000000FF;
+        return;
+    }
+
+    *px = 0xFFFFFFFF;
 }
