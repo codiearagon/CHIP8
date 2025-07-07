@@ -56,7 +56,6 @@ void Display::draw(uint8_t *rg, uint8_t _x, uint8_t _y, uint8_t n, uint16_t& _ir
 
     for (int row = 0; row < n; row++) {
         int data = mem->read(_ir + row);
-        std::cout << data << std::endl;
         
         for(int col = 0; col < 8; col++) {
             if((data & (0x80 >> col)) != 0) { // if pixel in sprite row is on
