@@ -1,6 +1,7 @@
 #include <vector>
 #include <stack>
 #include <random>
+#include "audio.h"
 #include "display.h"
 
 class Chip8 {
@@ -17,11 +18,16 @@ class Chip8 {
         
     private:
         Mode mode;
-        Memory *memory;
         Display *display;
+        Audio *audio;
+        Memory *memory;
         std::stack<uint16_t> stack;
         uint8_t registers[16] {0};
         uint8_t keypad[16] {0};
+
+        uint8_t delayTimer = 0;
+        uint8_t soundTimer = 0;
+        uint32_t lastTime = 0;
 
         uint16_t pc;
         uint16_t ir;
@@ -30,5 +36,6 @@ class Chip8 {
         std::mt19937 gen;
         std::uniform_int_distribution<uint8_t> dist;
 
-        void tick();
+        void handleEvents(SDL_Event& event, bool& running);
+        void updateTimers();
 };
